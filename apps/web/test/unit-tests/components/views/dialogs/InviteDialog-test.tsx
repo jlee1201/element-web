@@ -7,9 +7,9 @@ Please see LICENSE files in the repository root for full details.
 */
 
 import React from "react";
-import { fireEvent, render, screen, findByText } from "jest-matrix-react";
+import { findByText, fireEvent, render, screen } from "jest-matrix-react";
 import userEvent from "@testing-library/user-event";
-import { RoomType, type MatrixClient, MatrixError, Room } from "matrix-js-sdk/src/matrix";
+import { type MatrixClient, MatrixError, Room, RoomType } from "matrix-js-sdk/src/matrix";
 import { KnownMembership } from "matrix-js-sdk/src/types";
 import { sleep } from "matrix-js-sdk/src/utils";
 import { mocked, type Mocked } from "jest-mock";
@@ -454,5 +454,41 @@ describe("InviteDialog", () => {
         );
         await flushPromises();
         expect(screen.queryByText("@localpart:server.tld")).not.toBeInTheDocument();
+    });
+
+    describe("when inviting a user whose cryptographic identity we do not know", () => {
+        beforeEach(() => {
+            mocked(mockClient.getCrypto()!.getUserVerificationStatus).mockImplementation(async (u) => {
+                // make sure we don't attempt to call getUserVerificationStatus on things that aren't user IDs
+                if (!u.startsWith("@")) throw new Error(`Not a user id: ${u}`);
+                return new UserVerificationStatus(false, false, false, false);
+            });
+        });
+
+        describe.each([InviteKind.Invite, InviteKind.Dm])("to a %s", (kind) => {
+            const goButtonName = kind == InviteKind.Invite ? "Invite" : "Go";
+
+            beforeEach(() => {
+                render(
+                    <InviteDialog
+                        kind={kind as InviteKind.Invite | InviteKind.Dm}
+                        roomId={roomId}
+                        onFinished={jest.fn()}
+                    />,
+                );
+            });
+
+            it("should show a warning when inviting by user id", async () => {
+                await enterIntoSearchField("@alice:example.org");
+                await userEvent.click(screen.getByRole("button", { name: goButtonName }));
+                await screen.findByText("Confirm inviting them before continuing", { exact: false });
+            });
+
+            it("should show a warning when inviting by email address", async () => {
+                await enterIntoSearchField("aaa@bbb");
+                await userEvent.click(screen.getByRole("button", { name: goButtonName }));
+                await screen.findByText("Confirm inviting them before continuing", { exact: false });
+            });
+        });
     });
 });
