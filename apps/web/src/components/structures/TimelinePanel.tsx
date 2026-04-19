@@ -702,7 +702,20 @@ class TimelinePanel extends React.Component<IProps, IState> {
         // timeline window.
         //
         // see https://github.com/vector-im/vector-web/issues/1035
-        this.timelineWindow!.paginate(EventTimeline.FORWARDS, 1, false).then(() => {
+        //
+        // familee.online patch: for thread panels, paginate by more than 1.
+        // Upstream's paginate(FORWARDS, 1, false) only advances the window by
+        // a single event. When a live reply arrives alongside other non-live
+        // events (reactions with liveEvent=false, edits with liveEvent=false),
+        // only the reply's onRoomTimeline call actually reaches here; the
+        // reactions/edits are early-returned by the `!data.liveEvent` guard
+        // above. The single paginate advance then picks up the first of the
+        // queued non-live events (usually a reaction that arrived first in
+        // the sync batch) instead of the live reply we care about, and the
+        // reply never makes it into state.events. Thread panels are short,
+        // so paginating by a larger batch catches the full burst in one go.
+        const paginateCount = isThreadPanel ? 50 : 1;
+        this.timelineWindow!.paginate(EventTimeline.FORWARDS, paginateCount, false).then(() => {
             if (this.unmounted) {
                 return;
             }
