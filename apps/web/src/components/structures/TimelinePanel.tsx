@@ -684,7 +684,19 @@ class TimelinePanel extends React.Component<IProps, IState> {
 
         if (!this.messagePanel.current?.getScrollState()) return;
 
-        if (!this.messagePanel.current.getScrollState()?.stuckAtBottom) {
+        // familee.online patch: for thread panels, always advance the timeline
+        // so new replies land in state.events regardless of scroll position.
+        // Upstream's "not stuck at bottom = skip advance" early-return makes
+        // sense for room timelines (keeps old events on screen while user reads
+        // history) but causes thread panels to stay stale when they get
+        // momentarily un-stuck — which happens constantly with bot streaming
+        // edits and reactions in encrypted rooms. Thread panels are short
+        // (tens of events, not thousands), so the "don't push old events off"
+        // concern doesn't apply; users expect new thread replies to appear.
+        // See docs: matrix-org/matrix-js-sdk#3665 (the original "thread
+        // doesn't refresh" symptom is actually this element-web behavior).
+        const isThreadPanel = this.context.timelineRenderingType === TimelineRenderingType.Thread;
+        if (!isThreadPanel && !this.messagePanel.current.getScrollState()?.stuckAtBottom) {
             // we won't load this event now, because we don't want to push any
             // events off the other end of the timeline. But we need to note
             // that we can now paginate.
