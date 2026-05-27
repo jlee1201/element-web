@@ -15,8 +15,10 @@ catalog:
     # playwright
     "@playwright/test": 1.59.1
     "playwright-core": 1.59.1
-    # Compound
-    "@vector-im/compound-design-tokens": 10.1.1
+    # Compound -- design tokens are forked at jlee1201/compound-design-tokens-familee
+    # (v10.1.1 + Familee gray/green/red/yellow base palette overrides).
+    # See FAMILEE-CHANGES.md in the fork for full rationale.
+    "@vector-im/compound-design-tokens": "github:jlee1201/compound-design-tokens-familee#familee-main"
     "@vector-im/compound-web": 9.2.1
     # i18n
     matrix-web-i18n: 3.6.0
