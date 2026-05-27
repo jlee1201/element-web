@@ -21,6 +21,17 @@ import "@fontsource/fira-code/latin-400.css";
 import "@fontsource/fira-code/latin-ext-700.css";
 import "@fontsource/fira-code/latin-700.css";
 
+// familee.online: load Fraunces (display serif) for room names, headers,
+// settings section titles. Inter remains the body/UI font; Fraunces is
+// applied selectively via _custom.pcss selectors (NEVER on timeline body).
+import "@fontsource/fraunces/latin-400.css";
+import "@fontsource/fraunces/latin-600.css";
+
+// familee.online: load JetBrains Mono as the monospace face. Replaces
+// Fira Code via --font-family-monospace override in _custom.pcss.
+import "@fontsource/jetbrains-mono/latin-400.css";
+import "@fontsource/jetbrains-mono/latin-700.css";
+
 import { logger } from "matrix-js-sdk/src/logger";
 
 import { _t } from "./languageHandler";

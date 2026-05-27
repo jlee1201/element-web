@@ -143,3 +143,103 @@ $accent-1100: var(--accent-color-1100);
 $accent-1200: var(--accent-color-1200);
 $accent-1300: var(--accent-color-1300);
 $accent-1400: var(--accent-color-1400);
+
+/* ============================================================================
+ * familee.online additions -- Phase 3 typography + gap-fill
+ * ============================================================================
+ *
+ * This block is appended by the familee fork. Everything above is upstream EW
+ * customisation infrastructure. The rules here are additive and selector-
+ * scoped so they only apply when default_theme="light-custom" (or
+ * dark-custom). They do NOT affect the modern light/dark themes used during
+ * Phases 1-2 of the integration.
+ *
+ * See docs/superpowers/specs/2026-05-26-familee-element-web-theme-integration*.md
+ * in the parent dealia repo.
+ */
+
+/* Monospace override -- JetBrains Mono replaces Fira Code.
+ * The light-custom theme already wires $monospace-font-family from
+ * --font-family-monospace (line 10 above), so setting the CSS var here
+ * cascades through every $monospace-font-family use in the 380 .pcss
+ * partials without touching them. Inter remains the sans/UI face --
+ * Familee deliberately keeps body text in the default font and only
+ * adds Fraunces as a layered display face.
+ */
+:root,
+[class*="cpd-theme-"] {
+    --font-family-monospace:
+        "JetBrains Mono", "Fira Code", "Menlo", "Consolas", monospace;
+    --cpd-font-family-mono:
+        "JetBrains Mono", "Fira Code", "Menlo", "Consolas", monospace;
+}
+
+/* Fraunces (display serif) for prominent room/header labels.
+ *
+ * Targeting strategy (validated against v1.12.18 source):
+ *
+ *   1. New MVVM room list (packages/shared-components/.../RoomListItemView):
+ *      emits data-testid="room-name" on the title div. Babel preset-env
+ *      does NOT strip data-testid in production, so this attribute is
+ *      stable across builds. See spec §11 of the plan.
+ *
+ *   2. Legacy RoomHeader (apps/web/src/components/views/rooms/RoomHeader.tsx):
+ *      still uses .mx_RoomHeader_heading wrapping the room name and
+ *      .mx_RoomHeader_truncated for the name span itself. These are app-
+ *      web layer classes and stable.
+ *
+ *   3. Settings + Auth headings: target by mx_* parent + heading element.
+ *      If EW upstream restructures these classes, the rule degrades
+ *      gracefully (Inter takes over) rather than breaking layout.
+ *
+ * Anti-goal: Fraunces MUST NOT appear in message body text, notifications,
+ * tooltips, or input fields. The selectors below are deliberately narrow.
+ */
+
+/* MVVM room list -- room name tile in the left sidebar. */
+[data-testid="room-name"] {
+    font-family: "Fraunces", "Playfair Display", Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Legacy room header -- room name in the header bar above the timeline. */
+.mx_RoomHeader_heading,
+.mx_RoomHeader_heading .mx_RoomHeader_truncated {
+    font-family: "Fraunces", "Playfair Display", Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Settings tab section headings. */
+.mx_SettingsTab h2,
+.mx_SettingsSection .mx_SettingsHeader,
+.mx_SettingsSubsection_heading {
+    font-family: "Fraunces", "Playfair Display", Georgia, serif;
+    font-weight: 600;
+}
+
+/* Auth + welcome screen headings. */
+.mx_AuthPage h1,
+.mx_AuthPage h2,
+.mx_AuthHeader h1,
+.mx_Welcome h1,
+.mx_HomePage_default_buttons h1 {
+    font-family: "Fraunces", "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+/* Gap-fill: nudge the legacy hardcoded room-list background toward
+ * a linen-tinted overlay rather than the upstream cool-blue-gray
+ * default. $roomlist-bg-color in _legacy-light.pcss is
+ * rgba(245,245,245,0.9) -- a cool near-white that clashes with linen.
+ * Replace it with a warm linen-3 at 90% so the sidebar feels of-a-piece
+ * with the canvas after the Compound fork takes over. Targets the new
+ * MVVM room list container.
+ */
+.mx_RoomList,
+.mx_LeftPanel_roomListContainer {
+    background-color: rgba(240, 235, 224, 0.92); /* linen-3 at ~92% */
+}
+

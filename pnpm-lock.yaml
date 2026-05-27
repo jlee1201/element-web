@@ -351,8 +351,14 @@ importers:
       '@fontsource/fira-code':
         specifier: ^5
         version: 5.2.7
+      '@fontsource/fraunces':
+        specifier: ^5
+        version: 5.2.9
       '@fontsource/inter':
         specifier: 'catalog:'
+        version: 5.2.8
+      '@fontsource/jetbrains-mono':
+        specifier: ^5
         version: 5.2.8
       '@formatjs/intl-segmenter':
         specifier: ^12.0.0
@@ -2767,11 +2773,17 @@ packages:
   '@fontsource/fira-code@5.2.7':
     resolution: {integrity: sha512-tnB9NNund9TwIym8/7DMJe573nlPEQb+fKUV5GL8TBYXjIhDvL0D7mgmNVNQUPhXp+R7RylQeiBdkA4EbOHPGQ==}
 
+  '@fontsource/fraunces@5.2.9':
+    resolution: {integrity: sha512-XDzuddBtoC7BZgZdBn6b7hsFZY2+V1hgN7yca5fBTKuHjb/lOd45a0Ji8dTUgFhPoL7RdGupo+bC2BFSt6UH8Q==}
+
   '@fontsource/inconsolata@5.2.8':
     resolution: {integrity: sha512-lIZW+WOZYpUH91g9r6rYYhfTmptF3YPPM54ZOs8IYVeeL4SeiAu4tfj7mdr8llYEq31DLYgi6JtGIJa192gB0Q==}
 
   '@fontsource/inter@5.2.8':
     resolution: {integrity: sha512-P6r5WnJoKiNVV+zvW2xM13gNdFhAEpQ9dQJHt3naLvfg+LkF2ldgSLiF4T41lf1SQCM9QmkqPTn4TH568IRagg==}
+
+  '@fontsource/jetbrains-mono@5.2.8':
+    resolution: {integrity: sha512-6w8/SG4kqvIMu7xd7wt6x3idn1Qux3p9N62s6G3rfldOUYHpWcc2FKrqf+Vo44jRvqWj2oAtTHrZXEP23oSKwQ==}
 
   '@formatjs/fast-memoize@3.1.2':
     resolution: {integrity: sha512-vPnriihkfK0lzoQGaXq+qXH23VsYyansRTkTgo2aTG0k1NjLFyZimFVdfj4C9JkSE5dm7CEngcQ5TTc1yAyBfQ==}
@@ -15262,9 +15274,13 @@ snapshots:
 
   '@fontsource/fira-code@5.2.7': {}
 
+  '@fontsource/fraunces@5.2.9': {}
+
   '@fontsource/inconsolata@5.2.8': {}
 
   '@fontsource/inter@5.2.8': {}
+
+  '@fontsource/jetbrains-mono@5.2.8': {}
 
   '@formatjs/fast-memoize@3.1.2': {}
 
