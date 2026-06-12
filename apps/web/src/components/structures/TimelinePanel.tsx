@@ -714,6 +714,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
         // the sync batch) instead of the live reply we care about, and the
         // reply never makes it into state.events. Thread panels are short,
         // so paginating by a larger batch catches the full burst in one go.
+        const isThreadPanel = this.context.timelineRenderingType === TimelineRenderingType.Thread;
         const paginateCount = isThreadPanel ? 50 : 1;
         this.timelineWindow!.paginate(EventTimeline.FORWARDS, paginateCount, false).then(() => {
             if (this.unmounted) {
