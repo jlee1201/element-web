@@ -242,30 +242,30 @@ $accent-1400: var(--accent-color-1400);
     background-color: rgba(240, 235, 224, 0.92); /* linen-3 at ~92% */
 }
 
-/* Panel hierarchy: the modern MVVM RoomListPanel and RightPanel both read
- * --cpd-color-bg-canvas-default directly, which we've deliberately set
- * equal to --timeline-background-color (it's shared with dialogs/toasts/
- * the welcome page, so we can't recolor it per-panel without a much wider
- * blast radius). Without an override here, the room list, timeline, and
- * thread panel all render the exact same flat color -- the original bug
- * report. Give each plane its own step on the linen/iron ramp instead:
- * roomlist (sidebar plane) one step darker than canvas, right panel
- * (supplementary plane) one step darker still. Scoped to these two
- * selectors only -- --cpd-color-bg-canvas-default itself stays untouched
- * everywhere else.
+/* Panel hierarchy: chrome vs. content.
  *
- * Specificity note: _RoomListPanel.pcss / _RightPanel.pcss are imported
- * into the SAME app-web cascade layer via _components.pcss, which loads
- * AFTER this file -- a plain `.mx_RoomListPanel {}` here would lose the
- * source-order tie against the component's own equal-specificity rule.
- * `html` bumps specificity (0,1,1 vs 0,1,0) so this wins unconditionally,
- * without resorting to !important.
+ * The modern MVVM RoomListPanel and RightPanel both read
+ * --cpd-color-bg-canvas-default by default, which we've deliberately set
+ * equal to --timeline-background-color (it's shared with dialogs/toasts/
+ * the welcome page, so we can't recolor it globally without a much wider
+ * blast radius).
+ *
+ * Borrowing the nav-vs-content contrast pattern from Slack's client:
+ * the room list is chrome (navigation) and gets its own, slightly darker
+ * step on the linen/iron ramp so it visually groups with the sidebar
+ * rather than the timeline. The right/thread panel is content, same
+ * family as the timeline it's a continuation of -- so it's intentionally
+ * NOT overridden here and just inherits --cpd-color-bg-canvas-default,
+ * matching the message pane exactly.
+ *
+ * Specificity note: _RoomListPanel.pcss is imported into the SAME app-web
+ * cascade layer via _components.pcss, which loads AFTER this file -- a
+ * plain `.mx_RoomListPanel {}` here would lose the source-order tie
+ * against the component's own equal-specificity rule. `html` bumps
+ * specificity (0,1,1 vs 0,1,0) so this wins unconditionally, without
+ * resorting to !important.
  */
 html .mx_RoomListPanel {
     background-color: var(--roomlist-background-color);
-}
-
-html .mx_RightPanel {
-    background-color: var(--sidebar-color);
 }
 
