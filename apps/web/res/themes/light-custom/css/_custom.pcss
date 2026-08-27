@@ -269,3 +269,58 @@ html .mx_RoomListPanel {
     background-color: var(--roomlist-background-color);
 }
 
+/* Event row hover -- --timeline-highlights-color drives $event-selected-color
+ * (see _light.pcss / _dark.pcss), but upstream never wires that custom
+ * property to anything in light-custom/dark-custom, so hovering a message
+ * was a no-op. Populating the color in config.json fixes the existing
+ * `.mx_EventTile_line` hover rule in _EventTile.pcss; this extra rule
+ * extends the highlight to the FULL message row (avatar + name + timestamp
+ * gutter), not just the text column, so the whole card shifts together.
+ */
+.mx_EventTile[data-layout="irc"]:hover,
+.mx_EventTile[data-layout="group"]:hover {
+    background-color: var(--timeline-highlights-color);
+}
+
+/* Thread/right panel -- drop shadow on the left edge (Slack-style), so it
+ * reads as a panel floating above the timeline rather than a flat sibling
+ * column butted up against it. No existing box-shadow declaration on this
+ * selector, so no specificity tie to fight.
+ */
+.mx_RightPanel {
+    box-shadow: -6px 0 16px var(--right-panel-shadow-color);
+}
+
+/* Workspace rail (SpacePanel) -- dedicated dark chrome, always distinct
+ * from the message canvas in both light and dark mode (mirrors Slack's
+ * near-black nav rail regardless of the app's own light/dark theme). The
+ * modern SpacePanel (`.newUi`, gated by the new-room-list flag) reads
+ * --cpd-color-bg-canvas-default directly -- same bug pattern as the
+ * RoomListPanel/RightPanel fix above. `html` bumps specificity past both
+ * the plain `.mx_SpacePanel` rule and the component's own two-class
+ * `.mx_SpacePanel.newUi` rule so these win regardless of source order.
+ */
+html .mx_SpacePanel {
+    background-color: var(--space-panel-bg-color);
+}
+
+html .mx_SpacePanel.newUi {
+    background-color: var(--space-panel-bg-color);
+}
+
+.mx_SpacePanel {
+    /* Re-point the legacy content-color variables (and their modern
+     * Compound equivalents) this subtree inherits, so icons/text stay
+     * legible against the now-dark background instead of rendering
+     * dark-on-dark.
+     */
+    --timeline-text-color: var(--space-panel-fg-color);
+    --primary-content: var(--space-panel-fg-color);
+    --secondary-content: var(--space-panel-fg-secondary-color);
+    --tertiary-content: var(--space-panel-fg-secondary-color);
+    --cpd-color-icon-primary: var(--space-panel-fg-color);
+    --cpd-color-icon-secondary: var(--space-panel-fg-secondary-color);
+    --cpd-color-text-primary: var(--space-panel-fg-color);
+    --cpd-color-text-secondary: var(--space-panel-fg-secondary-color);
+}
+
