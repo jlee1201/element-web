@@ -302,6 +302,15 @@ export default class MessageContextMenu extends React.Component<IProps, IState> 
         this.closeMenu();
     };
 
+    // familee.online patch: one-click copy of the message permalink (Share opens a dialog first).
+    private onCopyPermalinkClick = (e: ButtonEvent): void => {
+        e.preventDefault();
+        const permalink = this.props.permalinkCreator?.forEvent(this.props.mxEvent.getId()!);
+        if (!permalink) return;
+        copyPlaintext(permalink);
+        this.closeMenu();
+    };
+
     private onCopyLinkClick = (e: ButtonEvent): void => {
         e.preventDefault(); // So that we don't open the permalink
         if (!this.props.link) return;
@@ -501,20 +510,36 @@ export default class MessageContextMenu extends React.Component<IProps, IState> 
         let permalinkButton: JSX.Element | undefined;
         if (permalink) {
             permalinkButton = (
-                <IconizedContextMenuOption
-                    icon={<ShareIcon />}
-                    onClick={this.onShareClick}
-                    label={_t("action|share")}
-                    element="a"
-                    {
-                        // XXX: Typescript signature for AccessibleButton doesn't work properly for non-inputs like `a`
-                        ...{
-                            href: permalink,
-                            target: "_blank",
-                            rel: "noreferrer noopener",
+                <>
+                    <IconizedContextMenuOption
+                        icon={<LinkIcon />}
+                        onClick={this.onCopyPermalinkClick}
+                        label={_t("timeline|context_menu|copy_permalink")}
+                        element="a"
+                        {
+                            // XXX: Typescript signature for AccessibleButton doesn't work properly for non-inputs like `a`
+                            ...{
+                                href: permalink,
+                                target: "_blank",
+                                rel: "noreferrer noopener",
+                            }
                         }
-                    }
-                />
+                    />
+                    <IconizedContextMenuOption
+                        icon={<ShareIcon />}
+                        onClick={this.onShareClick}
+                        label={_t("action|share")}
+                        element="a"
+                        {
+                            // XXX: Typescript signature for AccessibleButton doesn't work properly for non-inputs like `a`
+                            ...{
+                                href: permalink,
+                                target: "_blank",
+                                rel: "noreferrer noopener",
+                            }
+                        }
+                    />
+                </>
             );
         }
 

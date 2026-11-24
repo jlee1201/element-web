@@ -74,6 +74,31 @@ describe("MessageContextMenu", () => {
         expect(copyLinkButton).toBeFalsy();
     });
 
+    describe("copy link to message", () => {
+        const permalink = "https://matrix.to/#/!room:example.com/$event";
+        // Created per-test: the top-level beforeEach calls jest.resetAllMocks(), which would wipe a shared mock.
+        let permalinkCreator: { forEvent: jest.Mock };
+        beforeEach(() => {
+            permalinkCreator = { forEvent: jest.fn().mockReturnValue(permalink) };
+        });
+
+        it("copies the permalink in one click and closes the menu", async () => {
+            const onFinished = jest.fn();
+            createMenuWithContent(createMessageEventContent("hello"), {
+                permalinkCreator: permalinkCreator as any,
+                onFinished,
+            });
+            await userEvent.click(document.querySelector('a[aria-label="Copy link to message"]')!);
+            expect(copyPlaintext).toHaveBeenCalledWith(permalink);
+            expect(onFinished).toHaveBeenCalled();
+        });
+
+        it("is not shown without a permalink creator", () => {
+            createMenuWithContent(createMessageEventContent("hello"));
+            expect(document.querySelector('a[aria-label="Copy link to message"]')).toBeFalsy();
+        });
+    });
+
     describe("message pinning", () => {
         let room: Room;
 

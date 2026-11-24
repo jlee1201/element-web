@@ -3364,6 +3364,7 @@
     "timeline": {
         "context_menu": {
             "collapse_reply_thread": "Collapse reply thread",
+            "copy_permalink": "Copy link to message",
             "external_url": "Source URL",
             "open_in_osm": "Open in OpenStreetMap",
             "report": "Report",
