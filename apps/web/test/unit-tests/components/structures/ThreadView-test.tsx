@@ -22,6 +22,7 @@ import {
 import React, { useState } from "react";
 
 import ThreadView from "../../../../src/components/structures/ThreadView";
+import TimelinePanel from "../../../../src/components/structures/TimelinePanel";
 import MatrixClientContext from "../../../../src/contexts/MatrixClientContext";
 import { SdkContextClass } from "../../../../src/contexts/SDKContext";
 import { Action } from "../../../../src/dispatcher/actions";
@@ -210,6 +211,50 @@ describe("ThreadView", () => {
             action: Action.ViewRoom,
             room_id: room.roomId,
             metricsTrigger: undefined,
+        });
+    });
+
+    describe("handles scroll_to_bottom", () => {
+        // jumpToLiveTimeline is an instance field, so capture the mounted panel and replace it there.
+        async function renderWithJumpSpy(): Promise<jest.Mock> {
+            const mount = jest.spyOn(TimelinePanel.prototype, "componentDidMount");
+            await getComponent();
+            const panel = mount.mock.contexts[mount.mock.contexts.length - 1] as TimelinePanel;
+            mount.mockRestore();
+            const jump = jest.fn();
+            panel.jumpToLiveTimeline = jump;
+            return jump;
+        }
+
+        function scrollToBottom(timelineRenderingType: TimelineRenderingType): void {
+            act(() => {
+                dispatcher.dispatch({ action: "scroll_to_bottom", timelineRenderingType }, true);
+            });
+        }
+
+        it("jumps to the live end of the thread for payloads of timelineRenderingType=Thread", async () => {
+            const jump = await renderWithJumpSpy();
+            scrollToBottom(TimelineRenderingType.Thread);
+            expect(jump).toHaveBeenCalledTimes(1);
+        });
+
+        it("ignores payloads for the room timeline", async () => {
+            const jump = await renderWithJumpSpy();
+            scrollToBottom(TimelineRenderingType.Room);
+            expect(jump).not.toHaveBeenCalled();
+        });
+
+        it("jumps to the live end after sending a message from the thread composer", async () => {
+            const mount = jest.spyOn(TimelinePanel.prototype, "componentDidMount");
+            const { container } = await getComponent();
+            const panel = mount.mock.contexts[mount.mock.contexts.length - 1] as TimelinePanel;
+            mount.mockRestore();
+            const jump = jest.fn();
+            panel.jumpToLiveTimeline = jump;
+
+            await sendMessage(container, "Hello world!");
+
+            await waitFor(() => expect(jump).toHaveBeenCalled());
         });
     });
 

@@ -203,6 +203,13 @@ export default class ThreadView extends React.Component<IProps, IState> {
                     });
                 }
                 break;
+            case "scroll_to_bottom":
+                // familee.online patch: sending from the thread composer while scrolled up left the new
+                // message hidden below the fold, because RoomView only handles this for the room timeline.
+                if (payload.timelineRenderingType === TimelineRenderingType.Thread) {
+                    this.timelinePanel.current?.jumpToLiveTimeline();
+                }
+                break;
             default:
                 break;
         }
