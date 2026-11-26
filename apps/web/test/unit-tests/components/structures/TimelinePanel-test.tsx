@@ -54,6 +54,11 @@ import { SettingLevel } from "../../../../src/settings/SettingLevel";
 import MatrixClientBackedController from "../../../../src/settings/controllers/MatrixClientBackedController";
 import { SdkContextClass } from "../../../../src/contexts/SDKContext";
 import type Timer from "../../../../src/utils/Timer";
+import MessagePanel from "../../../../src/components/structures/MessagePanel";
+import { type IScrollState } from "../../../../src/components/structures/ScrollPanel";
+import { ScopedRoomContextProvider } from "../../../../src/contexts/ScopedRoomContext";
+import { TimelineRenderingType } from "../../../../src/contexts/RoomContext";
+import { getRoomContext } from "../../../test-utils/room";
 
 // ScrollPanel calls this, but jsdom doesn't mock it for us
 HTMLDivElement.prototype.scrollBy = () => {};
@@ -519,6 +524,79 @@ describe("TimelinePanel", () => {
     });
 
     describe("onRoomTimeline", () => {
+        // familee.online patch: thread panels keep loading live replies while scrolled up
+        describe("when scrolled up", () => {
+            beforeEach(() => {
+                jest.spyOn(MessagePanel.prototype, "getScrollState").mockReturnValue({
+                    stuckAtBottom: false,
+                } as IScrollState);
+            });
+
+            afterEach(() => {
+                jest.restoreAllMocks();
+            });
+
+            function renderAndReceiveLiveEvent(
+                timelineRenderingType: TimelineRenderingType,
+                extraProps: Partial<React.ComponentProps<typeof TimelinePanel>> = {},
+            ): { paginateSpy: jest.SpyInstance; panel: TimelinePanel } {
+                const [client, room, events] = setupTestData();
+                const props = { ...getProps(room, events), ...extraProps };
+                const sdkContext = new SdkContextClass();
+                sdkContext.client = client;
+                const paginateSpy = jest.spyOn(TimelineWindow.prototype, "paginate").mockClear();
+                const mount = jest.spyOn(TimelinePanel.prototype, "componentDidMount");
+
+                render(
+                    <ScopedRoomContextProvider {...getRoomContext(room, { timelineRenderingType })}>
+                        <TimelinePanel {...props} />
+                    </ScopedRoomContextProvider>,
+                    clientAndSDKContextRenderOptions(client, sdkContext),
+                );
+                const panel = mount.mock.contexts[mount.mock.contexts.length - 1] as TimelinePanel;
+                paginateSpy.mockClear();
+
+                const event = new MatrixEvent({
+                    type: RoomEvent.Timeline,
+                    sender: client.credentials.userId!,
+                    origin_server_ts: 0,
+                });
+                const data = { timeline: props.timelineSet.getLiveTimeline(), liveEvent: true };
+                act(() => {
+                    client.emit(RoomEvent.Timeline, event, room, false, false, data);
+                });
+                return { paginateSpy, panel };
+            }
+
+            it("still loads live events into a thread panel", async () => {
+                const { paginateSpy } = renderAndReceiveLiveEvent(TimelineRenderingType.Thread);
+                await act(() => flushPromises());
+
+                expect(paginateSpy).toHaveBeenCalledWith(EventTimeline.FORWARDS, 50, false);
+            });
+
+            it("leaves the room timeline alone and notes that it can paginate", async () => {
+                const { paginateSpy, panel } = renderAndReceiveLiveEvent(TimelineRenderingType.Room);
+                await act(() => flushPromises());
+
+                expect(paginateSpy).not.toHaveBeenCalled();
+                expect(panel.state.canForwardPaginate).toBe(true);
+            });
+
+            it("does not move the read marker to the bottom of a thread panel", async () => {
+                jest.spyOn(MessagePanel.prototype, "getReadMarkerPosition").mockReturnValue(0);
+                const setReadMarker = jest.spyOn(TimelinePanel.prototype as any, "setReadMarker");
+
+                const { paginateSpy } = renderAndReceiveLiveEvent(TimelineRenderingType.Thread, {
+                    manageReadMarkers: true,
+                });
+                await act(() => flushPromises());
+
+                expect(paginateSpy).toHaveBeenCalled();
+                expect(setReadMarker).not.toHaveBeenCalled();
+            });
+        });
+
         it("ignores events for other timelines", () => {
             const [client, room, events] = setupTestData();
 

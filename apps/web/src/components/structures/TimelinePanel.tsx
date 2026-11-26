@@ -685,7 +685,17 @@ class TimelinePanel extends React.Component<IProps, IState> {
 
         if (!this.messagePanel.current?.getScrollState()) return;
 
-        if (!this.messagePanel.current.getScrollState()?.stuckAtBottom) {
+        // familee.online patch: for thread panels, always advance the timeline
+        // so new replies land in state.events regardless of scroll position.
+        // Upstream's "not stuck at bottom = skip advance" early-return makes
+        // sense for room timelines (keeps old events on screen while user reads
+        // history) but leaves thread panels stale when they get momentarily
+        // un-stuck, which happens constantly with bot streaming edits and
+        // reactions in encrypted rooms. Thread panels are short (tens of
+        // events), so users expect new thread replies to appear.
+        const isThreadPanel = this.context.timelineRenderingType === TimelineRenderingType.Thread;
+        const stuckAtBottom = !!this.messagePanel.current.getScrollState()?.stuckAtBottom;
+        if (!isThreadPanel && !stuckAtBottom) {
             // we won't load this event now, because we don't want to push any
             // events off the other end of the timeline. But we need to note
             // that we can now paginate.
@@ -714,7 +724,6 @@ class TimelinePanel extends React.Component<IProps, IState> {
         // the sync batch) instead of the live reply we care about, and the
         // reply never makes it into state.events. Thread panels are short,
         // so paginating by a larger batch catches the full burst in one go.
-        const isThreadPanel = this.context.timelineRenderingType === TimelineRenderingType.Thread;
         const paginateCount = isThreadPanel ? 50 : 1;
         this.timelineWindow!.paginate(EventTimeline.FORWARDS, paginateCount, false).then(() => {
             if (this.unmounted) {
@@ -744,7 +753,7 @@ class TimelinePanel extends React.Component<IProps, IState> {
                 callRMUpdated = false;
                 if (ev.getSender() !== myUserId && !UserActivity.sharedInstance().userActiveRecently()) {
                     updatedState.readMarkerVisible = true;
-                } else if (lastLiveEvent && this.getReadMarkerPosition() === 0) {
+                } else if (stuckAtBottom && lastLiveEvent && this.getReadMarkerPosition() === 0) {
                     // we know we're stuckAtBottom, so we can advance the RM
                     // immediately, to save a later render cycle
 
